@@ -5,7 +5,8 @@ module.exports = {
             script: '.next/standalone/server.js', // Standalone build entry
             env: {
                 NODE_ENV: 'production',
-                PORT: 3000
+                PORT: 3000,
+                HOSTNAME: '0.0.0.0'
             },
         },
     ],
