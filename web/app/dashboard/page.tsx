@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-        redirect('/auth/login')
+        redirect('/auth/signin')
     }
 
     // 1. 获取统计数据

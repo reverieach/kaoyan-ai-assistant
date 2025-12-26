@@ -14,7 +14,7 @@ export default async function ProfilePage() {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/auth/login')
+        redirect('/auth/signin')
     }
 
     // 获取简单统计数据

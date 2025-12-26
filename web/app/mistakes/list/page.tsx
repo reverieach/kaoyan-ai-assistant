@@ -22,7 +22,7 @@ export default async function MistakeListPage({ searchParams }: Props) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/auth/login')
+        redirect('/auth/signin')
     }
 
     // Fetch all active mistakes for this subject

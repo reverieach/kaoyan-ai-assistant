@@ -92,7 +92,7 @@ export default function SignupPage() {
                     <Button className="w-full" onClick={handleRegister} disabled={loading}>
                         {loading ? '注册中...' : '注册'}
                     </Button>
-                    <Link href="/auth/signin" className="text-sm text-blue-500 hover:underline">
+                    <Link href="/auth/signin?v=2" className="text-sm text-blue-500 hover:underline">
                         已有账号？去登录
                     </Link>
                 </CardFooter>

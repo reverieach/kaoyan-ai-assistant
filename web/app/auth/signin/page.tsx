@@ -60,7 +60,7 @@ export default function LoginPage() {
                     <Button className="w-full" onClick={handleLogin} disabled={loading}>
                         {loading ? '登录中...' : '登录'}
                     </Button>
-                    <Link href="/auth/signup" className="text-sm text-blue-500 hover:underline">
+                    <Link href="/auth/signup?v=2" className="text-sm text-blue-500 hover:underline">
                         没有账号？去注册
                     </Link>
                 </CardFooter>

@@ -21,7 +21,7 @@ export default async function MistakeLibraryPage() {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/auth/login')
+        redirect('/auth/signin')
     }
 
     // 聚合查询各科目的错题数量
