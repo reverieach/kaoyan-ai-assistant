@@ -114,17 +114,26 @@ export default function ReferenceDetailPage({ params }: { params: Promise<{ id: 
             const reader = response.body.getReader()
             const decoder = new TextDecoder()
             let aiText = ''
+            let buffer = '' // Buffer for handling split chunks
 
             while (true) {
                 const { done, value } = await reader.read()
                 if (done) break
 
-                const chunk = decoder.decode(value, { stream: true })
-                const lines = chunk.split('\n')
+                const textChunk = decoder.decode(value, { stream: true })
+                buffer += textChunk
+
+                const lines = buffer.split('\n')
+                // Keep the last line in buffer if it's incomplete
+                buffer = lines.pop() || ''
+
                 for (const line of lines) {
-                    if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                    if (line.trim().startsWith('data: ')) {
+                        const dataStr = line.trim().slice(6)
+                        if (dataStr === '[DONE]') continue
+
                         try {
-                            const json = JSON.parse(line.trim().substring(6))
+                            const json = JSON.parse(dataStr)
                             const content = json.choices?.[0]?.delta?.content || ''
                             if (content) {
                                 aiText += content
@@ -137,15 +146,6 @@ export default function ReferenceDetailPage({ params }: { params: Promise<{ id: 
                                 })
                             }
                         } catch (e) { }
-                    } else if (line.trim() && !line.startsWith('data: ')) {
-                        aiText += line
-                        setMessages(prev => {
-                            const newHistory = [...prev]
-                            if (newHistory.length > 0) {
-                                newHistory[newHistory.length - 1] = { role: 'assistant', content: aiText }
-                            }
-                            return newHistory
-                        })
                     }
                 }
             }
