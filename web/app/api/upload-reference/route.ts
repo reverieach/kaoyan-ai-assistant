@@ -64,27 +64,21 @@ export async function POST(request: NextRequest) {
 
         const stream = new ReadableStream({
             async start(controller) {
-                let jsonResult = ''
+                let accumulatedOutput = ''
 
                 pythonProcess.stdout.on('data', (data: any) => {
                     const text = data.toString()
-                    // Check for progress markers
+                    accumulatedOutput += text
+
+                    // Check for progress markers (Real-time feedback)
                     const lines = text.split('\n')
                     for (const line of lines) {
                         if (line.startsWith('PROGRESS:')) {
-                            // Send progress event
                             try {
                                 const progressJson = line.replace('PROGRESS:', '').trim()
                                 const chunk = encoder.encode(`data: ${progressJson}\n\n`)
                                 controller.enqueue(chunk)
-                            } catch (e) {
-                                console.error('Error parsing progress:', e)
-                            }
-                        } else if (line.trim().startsWith('{') && line.trim().endsWith('}')) {
-                            // Likely the final JSON result
-                            jsonResult += line.trim()
-                        } else {
-                            // console.log('Python Stdout:', line)
+                            } catch (e) { }
                         }
                     }
                 })
@@ -100,12 +94,27 @@ export async function POST(request: NextRequest) {
 
                     if (code !== 0) {
                         await cleanup()
+                        // Try to parse error from output if possible
+                        try {
+                            const cleanOutput = accumulatedOutput.split('\n').filter(l => !l.startsWith('PROGRESS:') && l.trim().length > 0).join('')
+                            const res = JSON.parse(cleanOutput)
+                            if (res.error) {
+                                controller.error(new Error(`Script Error: ${res.error}`))
+                                return
+                            }
+                        } catch (e) { }
+
                         controller.error(new Error(`Python process exited with code ${code}`))
                         return
                     }
 
                     try {
-                        const result = JSON.parse(jsonResult)
+                        // Filter out PROGRESS lines to get the clean JSON
+                        const cleanJson = accumulatedOutput.split('\n')
+                            .filter(l => !l.startsWith('PROGRESS:') && l.trim().length > 0)
+                            .join('')
+
+                        const result = JSON.parse(cleanJson)
                         if (result.error) {
                             controller.error(new Error(result.error))
                             return
