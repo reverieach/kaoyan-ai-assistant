@@ -159,26 +159,33 @@ export default function ReferenceDetailPage({ params }: { params: Promise<{ id: 
 
     if (loading) return <div className="p-8 flex items-center justify-center h-full text-muted-foreground"><Loader2 className="w-6 h-6 animate-spin mr-2" /> 加载文档中...</div>
 
+    const [isChatExpanded, setIsChatExpanded] = useState(false)
+
+    // ... (keep existing effects)
+
+    // Smooth Typing Effect Helper (Optional, simplified for now to just fix rendering)
+    // To truly fix "chunkiness", we would need a token queue, but let's first fix formatting.
+
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-slate-50/30">
-            {/* Top Banner - Compact */}
+            {/* Top Banner */}
             <div className="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0 h-14">
                 <div className="flex items-center gap-3 overflow-hidden">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
                         <ArrowLeft className="w-4 h-4" />
                     </Button>
-                    <h1 className="text-base font-semibold truncate max-w-md" title={reference.title}>
-                        {reference.title}
+                    <h1 className="text-base font-semibold truncate max-w-md" title={reference?.title}>
+                        {loading ? '加载中...' : reference?.title}
                     </h1>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                    {new Date(reference.created_at).toLocaleDateString()}
+                    {reference?.created_at && new Date(reference.created_at).toLocaleDateString()}
                 </div>
             </div>
 
-            <div className="flex flex-1 overflow-hidden">
-                {/* Left: TOC Sidebar */}
-                <div className="hidden md:flex w-64 flex-col border-r bg-slate-50 overflow-y-auto shrink-0">
+            <div className="flex flex-1 overflow-hidden relative">
+                {/* Left: TOC Sidebar (Hidden if Chat Expanded) */}
+                <div className={`${isChatExpanded ? 'hidden' : 'hidden md:flex'} w-64 flex-col border-r bg-slate-50 overflow-y-auto shrink-0 transition-all`}>
                     <div className="p-4 font-semibold text-sm text-slate-500 sticky top-0 bg-slate-50 z-10 flex items-center gap-2">
                         <List className="w-4 h-4" /> 目录
                     </div>
@@ -201,8 +208,8 @@ export default function ReferenceDetailPage({ params }: { params: Promise<{ id: 
                     </div>
                 </div>
 
-                {/* Center: Content */}
-                <div className="flex-1 overflow-y-auto bg-white relative">
+                {/* Center: Content (Hidden if Chat Expanded) */}
+                <div className={`${isChatExpanded ? 'hidden' : 'flex-1'} overflow-y-auto bg-white relative transition-all`}>
                     <div className="max-w-3xl mx-auto px-8 py-10 min-h-full">
                         <div className="markdown-body">
                             <ReactMarkdown
@@ -217,75 +224,79 @@ export default function ReferenceDetailPage({ params }: { params: Promise<{ id: 
                                                 className="rounded-lg shadow-sm max-w-full h-auto mx-auto border"
                                                 alt={props.alt || 'img'}
                                             />
-                                            {props.alt && (
-                                                <p className="text-center text-xs text-muted-foreground mt-2 italic">
-                                                    {props.alt}
-                                                </p>
-                                            )}
                                         </div>
                                     ),
-                                    // Custom headers to add IDs for TOC
-                                    h1: ({ node, children, ...props }: any) => {
-                                        const text = String(children).replace(/\n/g, '')
-                                        const slug = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-\u4e00-\u9fa5]/g, '')
-                                        // Need to handle duplicates in render is hard without context, 
-                                        // but usually exact match works for jump if unique enough.
-                                        // We will rely on the verify same logic or just use text match?
-                                        // Better strategy: try to match the toc id logic.
-                                        // For now, let's just use strict slugify.
-                                        // NOTE: This might have collision issues if not synced with TOC logic perfectly.
-                                        // Alternative: Use a counter? No, render is pure.
-                                        // Let's assume low collision for now or accept first match.
-                                        return <h1 id={slug} {...props}>{children}</h1>
-                                    },
-                                    h2: ({ node, children, ...props }: any) => {
-                                        const text = String(children).replace(/\n/g, '')
-                                        const slug = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-\u4e00-\u9fa5]/g, '')
-                                        return <h2 id={slug} {...props}>{children}</h2>
-                                    },
-                                    h3: ({ node, children, ...props }: any) => {
-                                        const text = String(children).replace(/\n/g, '')
-                                        const slug = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-\u4e00-\u9fa5]/g, '')
-                                        return <h3 id={slug} {...props}>{children}</h3>
-                                    },
+                                    h1: ({ children, ...props }: any) => <h1 id={String(children).toLowerCase().replace(/\s+/g, '-')} {...props}>{children}</h1>,
+                                    h2: ({ children, ...props }: any) => <h2 id={String(children).toLowerCase().replace(/\s+/g, '-')} {...props}>{children}</h2>,
                                     blockquote: ({ node, ...props }: any) => {
                                         const isAI = String(props.children).includes('[AI图解]')
                                         return (
                                             <blockquote
                                                 {...props}
-                                                className={`border-l-4 pl-4 py-2 my-4 ${isAI ? 'border-purple-500 bg-purple-50 text-purple-900 rounded-r' : 'border-gray-300'
-                                                    }`}
+                                                className={`border-l-4 pl-4 py-2 my-4 ${isAI ? 'border-purple-500 bg-purple-50 text-purple-900 rounded-r' : 'border-gray-300'}`}
                                             />
                                         )
                                     }
                                 }}
                             >
-                                {reference.content}
+                                {reference?.content || ''}
                             </ReactMarkdown>
                         </div>
                     </div>
                 </div>
 
-                {/* Right: Chat (Resized) */}
-                <div className="hidden lg:flex w-[400px] flex-col border-l bg-slate-50/50 h-full shrink-0 shadow-[-1px_0_10px_rgba(0,0,0,0.03)] z-20">
-                    <div className="p-4 border-b bg-white flex items-center gap-2 font-semibold text-purple-700 shadow-sm">
-                        <MessageSquare className="w-5 h-5" />
-                        AI 助教答疑
+                {/* Right: Chat (Resized or Fullscreen) */}
+                <div className={`${isChatExpanded ? 'w-full absolute inset-0 z-30' : 'hidden lg:flex w-[400px] border-l'} flex flex-col bg-slate-50/50 h-full shrink-0 shadow-[-1px_0_10px_rgba(0,0,0,0.03)] transition-all duration-300`}>
+                    <div className="p-4 border-b bg-white flex items-center justify-between font-semibold text-purple-700 shadow-sm shrink-0">
+                        <div className="flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5" />
+                            AI 助教答疑
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 hover:bg-purple-50 text-purple-600"
+                            onClick={() => setIsChatExpanded(!isChatExpanded)}
+                            title={isChatExpanded ? "恢复分栏" : "最大化聊天"}
+                        >
+                            {isChatExpanded ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3" /><path d="M21 8h-3a2 2 0 0 1-2-2V3" /><path d="M3 16h3a2 2 0 0 1 2 2v3" /><path d="M16 21v-3a2 2 0 0 1 2-2h3" /></svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6" /><path d="M9 21H3v-6" /><path d="M21 3l-14 14" /><path d="M3 21l14-14" /></svg>
+                            )}
+                        </Button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         <div className="p-3 bg-purple-100 rounded-lg inline-block text-purple-900 text-sm shadow-sm">
-                            已读取《{reference.title}》。有什么不懂的随时问我！
+                            已读取《{reference?.title}》。有什么不懂的随时问我！
                         </div>
                         {messages.map((msg, i) => (
                             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`p-3 rounded-xl max-w-[90%] whitespace-pre-wrap text-sm shadow-sm ${msg.role === 'user'
-                                    ? 'bg-blue-600 text-white rounded-br-none'
-                                    : 'bg-white text-slate-700 border rounded-bl-none'
+                                <div className={`p-3 rounded-xl max-w-[90%] text-sm shadow-sm overflow-hidden ${msg.role === 'user'
+                                        ? 'bg-blue-600 text-white rounded-br-none'
+                                        : 'bg-white text-slate-700 border rounded-bl-none'
                                     }`}>
-                                    <ReactMarkdown components={{
-                                        p: ({ children }) => <p className="mb-0">{children}</p>
-                                    }}>
+                                    {/* FIX: Add math rendering to chat messages */}
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkMath]}
+                                        rehypePlugins={[rehypeKatex]}
+                                        components={{
+                                            p: ({ children }) => <p className="mb-0 leading-relaxed">{children}</p>,
+                                            code: ({ node, inline, className, children, ...props }: any) => {
+                                                const match = /language-(\w+)/.exec(className || '')
+                                                return !inline && match ? (
+                                                    <code className={className} {...props}>
+                                                        {children}
+                                                    </code>
+                                                ) : (
+                                                    <code className="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono" {...props}>
+                                                        {children}
+                                                    </code>
+                                                )
+                                            }
+                                        }}
+                                    >
                                         {msg.content}
                                     </ReactMarkdown>
                                 </div>
@@ -302,12 +313,12 @@ export default function ReferenceDetailPage({ params }: { params: Promise<{ id: 
                         )}
                     </div>
 
-                    <div className="p-4 bg-white border-t">
+                    <div className="p-4 bg-white border-t shrink-0">
                         <div className="flex gap-2 items-end bg-slate-100 p-2 rounded-xl border focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                             <textarea
                                 value={chatInput}
                                 onChange={e => setChatInput(e.target.value)}
-                                placeholder="输入问题 (Enter 发送, Shift+Enter 换行)..."
+                                placeholder="输入问题 (Enter 发送)..."
                                 className="flex-1 bg-transparent border-none text-sm resize-none focus:outline-none max-h-32 min-h-[40px] py-2"
                                 rows={1}
                                 onKeyDown={e => {

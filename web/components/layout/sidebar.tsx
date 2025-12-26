@@ -45,7 +45,15 @@ export function AppSidebar() {
 
             <div className="flex-1 px-4 py-4 space-y-2">
                 {navItems.map((item) => {
-                    const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href.split('?')[0]))
+                    let isActive = pathname === item.href
+
+                    if (!isActive && item.href !== '/dashboard' && pathname.startsWith(item.href)) {
+                        isActive = true
+                        // Special case: prevent /mistakes from swallowing siblings
+                        if (item.href === '/mistakes' && (pathname.startsWith('/mistakes/new') || pathname.startsWith('/mistakes/pending'))) {
+                            isActive = false
+                        }
+                    }
                     return (
                         <Link
                             key={item.href}
