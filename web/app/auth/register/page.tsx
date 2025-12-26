@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Label } from '@/components/ui/label'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { toast } from 'sonner' // Assuming sonner is available
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('')
