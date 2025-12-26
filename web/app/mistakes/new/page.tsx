@@ -247,25 +247,25 @@ export default function NewMistakePage() {
 
             {imageFiles.length > 0 && (
                 <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" size="lg" className="h-16 flex flex-col gap-1" onClick={handleInstantSave} disabled={uploading}>
+                    <Button variant="outline" size="lg" className="h-20 flex flex-col gap-1" onClick={handleInstantSave} disabled={uploading}>
                         {uploading && progress.total > 0 ? (
-                            <span className="text-xs">上传中 {progress.current}/{progress.total}</span>
+                            <span className="text-sm">上传中 {progress.current}/{progress.total}</span>
                         ) : (
                             <>
-                                <Zap className="w-5 h-5 text-yellow-500" />
-                                <span className="text-xs">极速保存 ({imageFiles.length})</span>
+                                <Zap className="w-6 h-6 text-yellow-500" />
+                                <span className="text-sm">极速保存 ({imageFiles.length})</span>
                             </>
                         )}
                     </Button>
 
                     <Button
                         size="lg"
-                        className="h-16 flex flex-col gap-1 bg-gradient-to-r from-blue-600 to-purple-600"
+                        className="h-20 flex flex-col gap-1 bg-gradient-to-r from-blue-600 to-purple-600"
                         onClick={handleAnalyzeNow}
                         disabled={uploading || imageFiles.length > 1} // Disable analyze for batch
                     >
-                        <BrainCircuit className="w-5 h-5" />
-                        <span className="text-xs">
+                        <BrainCircuit className="w-6 h-6" />
+                        <span className="text-sm">
                             {imageFiles.length > 1 ? '仅单张可分析' : '立即分析 (AI)'}
                         </span>
                     </Button>

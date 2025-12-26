@@ -82,7 +82,7 @@ export function AppSidebar() {
                     个人中心
                 </Link>
                 <Link
-                    href="/auth/logout" // Handle logout logic
+                    href="/auth/signout"
                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg"
                 >
                     <LogOut className="w-5 h-5" />

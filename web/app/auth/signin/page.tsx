@@ -35,8 +35,8 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <Card className="w-[350px]">
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+            <Card className="w-full max-w-[350px]">
                 <CardHeader>
                     <CardTitle>登录到 11408 助手</CardTitle>
                     <CardDescription>使用你的账号开始复习</CardDescription>
@@ -60,7 +60,7 @@ export default function LoginPage() {
                     <Button className="w-full" onClick={handleLogin} disabled={loading}>
                         {loading ? '登录中...' : '登录'}
                     </Button>
-                    <Link href="/auth/signup?v=2" className="text-sm text-blue-500 hover:underline">
+                    <Link href="/auth/signup?v=2" prefetch={false} className="text-sm text-blue-500 hover:underline">
                         没有账号？去注册
                     </Link>
                 </CardFooter>

@@ -65,7 +65,7 @@ export default async function DashboardPage() {
     ]
 
     return (
-        <div className="container max-w-5xl mx-auto p-6 space-y-8">
+        <div className="container max-w-5xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
             {/* Header */}
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
                 <div>
@@ -76,15 +76,15 @@ export default async function DashboardPage() {
                         你好 {user.email?.split('@')[0]}, 今天主攻什么科目？
                     </p>
                 </div>
-                <div className="flex gap-3">
-                    <Link href="/references">
-                        <Button variant="outline" size="lg" className="shadow-sm">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <Link href="/references" className="w-full sm:w-auto">
+                        <Button variant="outline" size="lg" className="w-full shadow-sm">
                             <Search className="mr-2 h-4 w-4" />
                             AI 问答
                         </Button>
                     </Link>
-                    <Link href="/mistakes/new">
-                        <Button size="lg" className="shadow-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0">
+                    <Link href="/mistakes/new" className="w-full sm:w-auto">
+                        <Button size="lg" className="w-full shadow-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0">
                             <PlusCircle className="mr-2 h-5 w-5" />
                             录入新题
                         </Button>
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
                             {(reviewCount || 0) > 0 ? ` 还有 ${reviewCount} 道题待完成。` : " 今日任务已完成。"}
                         </p>
                         <Link href="/review" className="block">
-                            <Button className="w-full" variant={(reviewCount || 0) > 0 ? "default" : "secondary"}>
+                            <Button className={`w-full ${(reviewCount || 0) > 0 ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}`} variant={(reviewCount || 0) > 0 ? "default" : "secondary"}>
                                 {(reviewCount || 0) > 0 ? "开始今日复习" : "自由复习模式"}
                             </Button>
                         </Link>

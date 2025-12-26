@@ -68,8 +68,8 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <Card className="w-[350px]">
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+            <Card className="w-full max-w-[350px]">
                 <CardHeader>
                     <CardTitle>注册新账号 (Signup)</CardTitle>
                     <CardDescription>创建你的 11408 学习档案</CardDescription>
@@ -92,7 +92,7 @@ export default function SignupPage() {
                     <Button className="w-full" onClick={handleRegister} disabled={loading}>
                         {loading ? '注册中...' : '注册'}
                     </Button>
-                    <Link href="/auth/signin?v=2" className="text-sm text-blue-500 hover:underline">
+                    <Link href="/auth/signin?v=2" prefetch={false} className="text-sm text-blue-500 hover:underline">
                         已有账号？去登录
                     </Link>
                 </CardFooter>
