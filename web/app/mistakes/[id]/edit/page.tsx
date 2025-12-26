@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import 'katex/dist/katex.min.css'
 import Latex from 'react-latex-next'
+import { TagInput } from '@/components/ui/tag-input'
+import { Upload, ImageIcon } from 'lucide-react'
 
 export default function EditMistakePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -26,7 +28,10 @@ export default function EditMistakePage({ params }: { params: Promise<{ id: stri
   const [errorType, setErrorType] = useState('Other')
   const [userAnswer, setUserAnswer] = useState('')
   const [correctAnswer, setCorrectAnswer] = useState('')
+  const [answerImage, setAnswerImage] = useState('')
+  const [uploadingAnswer, setUploadingAnswer] = useState(false)
   const [aiAnalysis, setAiAnalysis] = useState('')
+  const [knowledgeTags, setKnowledgeTags] = useState<string[]>([])
 
   const router = useRouter()
   const supabase = createClient()
@@ -60,7 +65,9 @@ export default function EditMistakePage({ params }: { params: Promise<{ id: stri
     if (data.error_type) setErrorType(data.error_type)
     if (data.user_answer) setUserAnswer(data.user_answer)
     if (data.correct_answer) setCorrectAnswer(data.correct_answer)
+    if (data.answer_image) setAnswerImage(data.answer_image)
     if (data.ai_analysis) setAiAnalysis(data.ai_analysis)
+    if (data.knowledge_tags) setKnowledgeTags(data.knowledge_tags || [])
 
     // If status is 'analyzing' and question_text is empty, trigger AI automatically
     if (data.status === 'analyzing' && !data.question_text) {
@@ -92,12 +99,41 @@ export default function EditMistakePage({ params }: { params: Promise<{ id: stri
       if (result.subject) setSubject(result.subject)
       if (result.error_type) setErrorType(result.error_type)
       if (result.ai_analysis) setAiAnalysis(result.ai_analysis)
+      if (result.knowledge_tags) setKnowledgeTags(result.knowledge_tags)
 
       toast.success('AI 分析完成，请核对')
     } catch (e: any) {
       toast.error('AI 分析失败: ' + e.message)
     } finally {
       setAnalyzing(false)
+    }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+
+    const file = e.target.files[0]
+    setUploadingAnswer(true)
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `answer_${id}_${Date.now()}.${fileExt}`
+      const { error: uploadError } = await supabase.storage
+        .from('mistakes')
+        .upload(fileName, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('mistakes')
+        .getPublicUrl(fileName)
+
+      setAnswerImage(publicUrl)
+      toast.success('图片上传成功')
+    } catch (error: any) {
+      toast.error('上传失败: ' + error.message)
+    } finally {
+      setUploadingAnswer(false)
     }
   }
 
@@ -110,7 +146,9 @@ export default function EditMistakePage({ params }: { params: Promise<{ id: stri
         error_type: errorType,
         user_answer: userAnswer,
         correct_answer: correctAnswer,
+        answer_image: answerImage,
         ai_analysis: aiAnalysis,
+        knowledge_tags: knowledgeTags,
         status: 'active', // Mark as ready for review
         updated_at: new Date().toISOString()
       })
@@ -132,6 +170,7 @@ export default function EditMistakePage({ params }: { params: Promise<{ id: stri
       <div className="w-1/2 flex flex-col gap-4 overflow-y-auto">
         <Card>
           <CardContent className="p-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={record?.original_image} className="w-full rounded-md" alt="Source" />
           </CardContent>
         </Card>
@@ -193,6 +232,49 @@ export default function EditMistakePage({ params }: { params: Promise<{ id: stri
                 <SelectItem value="Other">其他</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>知识点标签 (自定义)</Label>
+          <TagInput value={knowledgeTags} onChange={setKnowledgeTags} placeholder="输入标签 (如: 中值定理) 按回车添加" />
+        </div>
+
+        <div className="space-y-2">
+          <Label>标准答案 (图片)</Label>
+          <div className="flex items-center gap-4">
+            {answerImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={answerImage} alt="Answer" className="h-20 w-auto rounded border" />
+            )}
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                disabled={uploadingAnswer}
+              />
+              <Button type="button" variant="secondary" size="sm" disabled={uploadingAnswer}>
+                {uploadingAnswer ? '上传中...' : (
+                  <>
+                    <ImageIcon className="w-4 h-4 mr-2" />
+                    {answerImage ? '更换图片' : '上传图片'}
+                  </>
+                )}
+              </Button>
+            </div>
+            {answerImage && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-red-500 hover:text-red-700"
+                onClick={() => setAnswerImage('')}
+              >
+                清除
+              </Button>
+            )}
           </div>
         </div>
 

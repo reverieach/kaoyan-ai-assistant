@@ -123,3 +123,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide Next.js Dev Indicator (Floating Ball) */
+[data-nextjs-toast],
+[data-nextjs-toast-errors-parent],
+build-activity-indicator {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

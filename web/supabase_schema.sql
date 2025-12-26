@@ -15,6 +15,7 @@ create table mistakes (
   -- User & Correct Answer
   user_answer text,
   correct_answer text,
+  answer_image text, -- Standard Answer Image URL
   
   -- Analysis & Metadata
   knowledge_tags text[], -- Array of strings
@@ -46,6 +47,47 @@ using (auth.uid() = user_id);
 create policy "Users can insert their own mistakes" 
 on mistakes for insert 
 with check (auth.uid() = user_id);
+
+create policy "Users can create feedbacks"
+on feedbacks for insert
+with check (auth.uid() = user_id);
+
+-- References Table (Knowledge Base)
+create table references_kb (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  title text not null,
+  content text, -- Markdown content
+  summary text,
+  created_at timestamptz default now()
+);
+
+alter table references_kb enable row level security;
+
+create policy "Users can view their own references"
+on references_kb for select
+using (auth.uid() = user_id);
+
+create policy "Users can insert references"
+on references_kb for insert
+with check (auth.uid() = user_id);
+
+create policy "Users can delete their own references"
+on references_kb for delete
+using (auth.uid() = user_id);
+
+-- Storage bucket for Reference Images
+insert into storage.buckets (id, name, public)
+values ('reference_images', 'reference_images', true)
+on conflict (id) do nothing;
+
+create policy "Reference images are publicly accessible"
+  on storage.objects for select
+  using ( bucket_id = 'reference_images' );
+
+create policy "Users can upload reference images"
+  on storage.objects for insert
+  with check ( bucket_id = 'reference_images' AND auth.uid() = owner );
 
 create policy "Users can update their own mistakes" 
 on mistakes for update 
