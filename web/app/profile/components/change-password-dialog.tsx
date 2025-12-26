@@ -23,6 +23,12 @@ export function ChangePasswordDialog() {
     const [loading, setLoading] = useState(false)
 
     const handleChangePassword = async () => {
+        // 验证输入
+        if (!currentPassword) {
+            toast.error('请输入当前密码')
+            return
+        }
+
         if (newPassword.length < 6) {
             toast.error('新密码至少需要6位')
             return
@@ -38,23 +44,49 @@ export function ChangePasswordDialog() {
         try {
             const supabase = createClient()
 
-            // 更新密码
-            const { error } = await supabase.auth.updateUser({
+            // 1. 获取当前用户
+            const { data: { user }, error: userError } = await supabase.auth.getUser()
+            if (userError || !user) {
+                toast.error('登录状态已过期，请重新登录')
+                window.location.href = '/auth/signin'
+                return
+            }
+
+            // 2. 验证当前密码（通过重新登录验证）
+            const { error: verifyError } = await supabase.auth.signInWithPassword({
+                email: user.email!,
+                password: currentPassword
+            })
+
+            if (verifyError) {
+                toast.error('当前密码不正确')
+                setLoading(false)
+                return
+            }
+
+            // 3. 更新密码
+            const { error: updateError } = await supabase.auth.updateUser({
                 password: newPassword
             })
 
-            if (error) {
-                toast.error(error.message)
-            } else {
-                toast.success('密码修改成功！')
-                setOpen(false)
-                setCurrentPassword('')
-                setNewPassword('')
-                setConfirmPassword('')
+            if (updateError) {
+                toast.error(updateError.message)
+                setLoading(false)
+                return
             }
+
+            // 4. 成功后登出并跳转
+            toast.success('密码修改成功，请重新登录')
+
+            await supabase.auth.signOut()
+
+            // 延迟跳转让 toast 显示
+            setTimeout(() => {
+                window.location.href = '/auth/signin'
+            }, 1500)
+
         } catch (error: any) {
             toast.error(error.message || '修改失败')
-        } finally {
             setLoading(false)
         }
     }
@@ -72,6 +104,16 @@ export function ChangePasswordDialog() {
                     <DialogTitle>修改密码</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="currentPassword">当前密码</Label>
+                        <Input
+                            id="currentPassword"
+                            type="password"
+                            placeholder="输入当前密码"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                        />
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="newPassword">新密码</Label>
                         <Input

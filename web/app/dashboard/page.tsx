@@ -37,12 +37,6 @@ export default async function DashboardPage() {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
 
-    // 知识库文档数量（按用户隔离）
-    const { count: referenceCount } = await supabase
-        .from('references_kb')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-
     const stats = [
         {
             title: "今日待复习",
@@ -62,7 +56,7 @@ export default async function DashboardPage() {
         },
         {
             title: "知识库文档",
-            value: referenceCount || 0,
+            value: "12", // Mock data for now
             icon: BookOpen,
             color: "text-teal-500",
             bg: "bg-teal-50",
@@ -106,7 +100,7 @@ export default async function DashboardPage() {
                 </h2>
                 <div className="grid gap-4 md:grid-cols-3">
                     {stats.map((stat, index) => (
-                        <Card key={index} className="border-none shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-200">
+                        <Card key={index} className="border-none shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-200 h-full flex flex-col">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
                                     {stat.title}
@@ -115,14 +109,17 @@ export default async function DashboardPage() {
                                     <stat.icon className={`h-4 w-4 ${stat.color}`} />
                                 </div>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="flex flex-col flex-1">
                                 <div className="text-2xl font-bold">{stat.value}</div>
-                                {stat.action && (
+                                <div className="flex-1 min-h-2" />
+                                {stat.action ? (
                                     <Link href={stat.action.href} className="mt-4 block">
-                                        <Button variant="outline" size="sm" className="w-full mt-2 text-xs border-dashed border-gray-300 hover:border-gray-400">
+                                        <Button variant="outline" size="sm" className="w-full text-xs border-dashed border-gray-300 hover:border-gray-400">
                                             {stat.action.label}
                                         </Button>
                                     </Link>
+                                ) : (
+                                    <div className="mt-4 h-9" />
                                 )}
                             </CardContent>
                         </Card>

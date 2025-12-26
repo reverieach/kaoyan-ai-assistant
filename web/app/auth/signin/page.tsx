@@ -18,20 +18,32 @@ export default function LoginPage() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (!email || !password) {
+            alert('请填写邮箱和密码')
+            return
+        }
+
         setLoading(true)
 
-        // 简单演示，实际建议用 Server Action
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        })
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            })
 
-        if (error) {
-            alert(error.message)
-        } else {
-            router.push('/dashboard')
+            if (error) {
+                alert(error.message)
+                setLoading(false)
+            } else {
+                router.refresh()
+                router.push('/dashboard')
+                // 不调用 setLoading(false)，让按钮保持 loading 直到页面跳转
+            }
+        } catch (err: any) {
+            alert(err.message || '登录失败')
+            setLoading(false)
         }
-        setLoading(false)
     }
 
     return (
