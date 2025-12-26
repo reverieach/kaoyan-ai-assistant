@@ -50,7 +50,7 @@ export default function SignupPage() {
             alert(error.message)
         } else {
             alert('注册成功！请检查邮箱验证或直接登录')
-            router.push('/auth/login')
+            router.push('/auth/signin')
         }
         setLoading(false)
     }
