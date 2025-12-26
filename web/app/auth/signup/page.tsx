@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,15 +9,36 @@ import { Label } from '@/components/ui/label'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-export default function RegisterPage() {
+export default function SignupPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
+    const [envError, setEnvError] = useState<string | null>(null)
     const router = useRouter()
-    const supabase = createClient()
+
+    // Safe Supabase Initialization
+    let supabase: any = null
+    try {
+        supabase = createClient()
+    } catch (e: any) {
+        console.error("Supabase Client Init Error:", e)
+        // We defer setting state to useEffect to avoid hydration mismatch if it throws differently on server/client
+    }
+
+    useEffect(() => {
+        try {
+            createClient()
+        } catch (e: any) {
+            setEnvError(e.message || "Environment Variables Missing")
+        }
+    }, [])
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!supabase) {
+            alert("系统初始化失败，请检查服务器环境变量")
+            return
+        }
         setLoading(true)
 
         const { error } = await supabase.auth.signUp({
@@ -28,17 +49,29 @@ export default function RegisterPage() {
         if (error) {
             alert(error.message)
         } else {
-            alert('注册成功！请检查邮箱验证或直接登录（取决于 Supabase 设置）')
+            alert('注册成功！请检查邮箱验证或直接登录')
             router.push('/auth/login')
         }
         setLoading(false)
+    }
+
+    if (envError) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-red-50 p-4">
+                <div className="bg-white p-6 rounded shadow text-red-600">
+                    <h2 className="font-bold text-lg mb-2">系统配置错误</h2>
+                    <p>无法连接数据库，原因：{envError}</p>
+                    <p className="text-sm text-gray-500 mt-2">请确保服务器已配置 NEXT_PUBLIC_SUPABASE_URL</p>
+                </div>
+            </div>
+        )
     }
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <Card className="w-[350px]">
                 <CardHeader>
-                    <CardTitle>注册账号</CardTitle>
+                    <CardTitle>注册新账号 (Signup)</CardTitle>
                     <CardDescription>创建你的 11408 学习档案</CardDescription>
                 </CardHeader>
                 <CardContent>
