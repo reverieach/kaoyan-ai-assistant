@@ -92,7 +92,12 @@ export async function POST(request: NextRequest) {
                 })
 
                 pythonProcess.on('close', async (code: number) => {
+                    const cleanup = async () => {
+                        try { await rm(tempDir, { recursive: true, force: true }) } catch (e) { }
+                    }
+
                     if (code !== 0) {
+                        await cleanup()
                         controller.error(new Error(`Python process exited with code ${code}`))
                         return
                     }

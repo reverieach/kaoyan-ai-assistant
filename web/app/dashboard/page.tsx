@@ -136,11 +136,11 @@ export default async function DashboardPage() {
                     <CardContent className="space-y-4">
                         <p className="text-sm text-muted-foreground min-h-[40px]">
                             基于 SM-2 记忆曲线为你安排今日复习任务。
-                            {reviewCount > 0 ? ` 还有 ${reviewCount} 道题待完成。` : " 今日任务已完成。"}
+                            {(reviewCount || 0) > 0 ? ` 还有 ${reviewCount} 道题待完成。` : " 今日任务已完成。"}
                         </p>
                         <Link href="/review" className="block">
-                            <Button className="w-full" variant={reviewCount > 0 ? "default" : "secondary"}>
-                                {reviewCount > 0 ? "开始今日复习" : "自由复习模式"}
+                            <Button className="w-full" variant={(reviewCount || 0) > 0 ? "default" : "secondary"}>
+                                {(reviewCount || 0) > 0 ? "开始今日复习" : "自由复习模式"}
                             </Button>
                         </Link>
                     </CardContent>
