@@ -1,0 +1,4 @@
+sentence-transformers>=2.2.2
+pymupdf4llm>=0.0.1
+openai>=1.0.0
+numpy>=1.24.0
