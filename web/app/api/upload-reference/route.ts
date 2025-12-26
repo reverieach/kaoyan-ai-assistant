@@ -46,8 +46,10 @@ export async function POST(request: NextRequest) {
         const scriptPath = join(process.cwd(), '..', 'scripts', 'pdf_converter.py')
 
         // Spawn Python process
+        // Spawn Python process
+        const pythonCommand = process.env.PYTHON_PATH || 'python'
         const { spawn } = require('child_process')
-        const pythonProcess = spawn('python', [scriptPath, safePath, tempDir], {
+        const pythonProcess = spawn(pythonCommand, [scriptPath, safePath, tempDir], {
             env: {
                 ...process.env,
                 API_KEY: process.env.KB_LLM_API_KEY || process.env.LLM_API_KEY,

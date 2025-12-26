@@ -13,11 +13,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Import dependencies
-try:
-    import pymupdf4llm
-except ImportError:
-    print(json.dumps({"error": "Missing dependency: pymupdf4llm"}), file=sys.stdout)
-    sys.exit(1)
+# Import dependencies
+# pymupdf4llm is now imported lazily in convert_and_enhance
 
 try:
     from openai import OpenAI
@@ -276,7 +273,12 @@ def convert_and_enhance(input_path, output_dir):
         image_out_path = os.path.join(output_dir, "images")
         os.makedirs(image_out_path, exist_ok=True)
         
-        if 'pymupdf4llm' in sys.modules:
+        if True: # Lazy import check handled inside
+             try:
+                 import pymupdf4llm
+             except ImportError:
+                 raise ImportError("pymupdf4llm not installed")
+
              md_text = pymupdf4llm.to_markdown(
                 input_path, 
                 write_images=True, 
