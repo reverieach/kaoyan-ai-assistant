@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "27考研助手",
   description: "基于AI的考研复习助手，支持错题管理、智能复习和资料问答",
   icons: {
-    icon: "/icon.jpg",
+    icon: "/icon.png",
   },
 };
 
