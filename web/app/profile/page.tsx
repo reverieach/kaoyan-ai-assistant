@@ -3,9 +3,10 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogOut, User, Mail, Calendar, BookOpen, Brain, Clock } from 'lucide-react'
+import { LogOut, User, Mail, Calendar, BookOpen, Brain, Clock, Key } from 'lucide-react'
 import { EditProfileDialog } from './components/edit-profile-dialog'
 import { FeedbackDialog } from './components/feedback-dialog'
+import { ChangePasswordDialog } from './components/change-password-dialog'
 
 export const dynamic = 'force-dynamic'
 
@@ -135,6 +136,17 @@ export default async function ProfilePage() {
                                     <p className="text-xs text-muted-foreground">点击上方编辑按钮修改</p>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <Key className="w-5 h-5 text-gray-500" />
+                                <div>
+                                    <p className="font-medium">账号安全</p>
+                                    <p className="text-xs text-muted-foreground">修改登录密码</p>
+                                </div>
+                            </div>
+                            <ChangePasswordDialog />
                         </div>
 
                         <div className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">

@@ -37,6 +37,12 @@ export default async function DashboardPage() {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
 
+    // 知识库文档数量（按用户隔离）
+    const { count: referenceCount } = await supabase
+        .from('references_kb')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
     const stats = [
         {
             title: "今日待复习",
@@ -56,7 +62,7 @@ export default async function DashboardPage() {
         },
         {
             title: "知识库文档",
-            value: "12", // Mock data for now
+            value: referenceCount || 0,
             icon: BookOpen,
             color: "text-teal-500",
             bg: "bg-teal-50",

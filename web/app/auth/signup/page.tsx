@@ -39,17 +39,45 @@ export default function SignupPage() {
             alert("系统初始化失败，请检查服务器环境变量")
             return
         }
+
+        if (!email || !password) {
+            alert("请填写邮箱和密码")
+            return
+        }
+
+        if (password.length < 6) {
+            alert("密码至少需要6位")
+            return
+        }
+
         setLoading(true)
 
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
         })
 
         if (error) {
-            alert(error.message)
+            // Supabase 返回的常见错误处理
+            if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+                alert('该邮箱已被注册，请直接登录或使用其他邮箱')
+            } else if (error.message.includes('Invalid email')) {
+                alert('邮箱格式不正确')
+            } else if (error.message.includes('Password')) {
+                alert('密码不符合要求（至少6位）')
+            } else {
+                alert(error.message)
+            }
+        } else if (data.user && !data.session) {
+            // 用户创建成功但需要邮箱验证
+            alert('注册成功！请检查邮箱完成验证后登录')
+            router.push('/auth/signin')
+        } else if (data.user && data.session) {
+            // 用户创建成功且自动登录
+            alert('注册成功！')
+            router.push('/dashboard')
         } else {
-            alert('注册成功！请检查邮箱验证或直接登录')
+            alert('注册成功！请登录')
             router.push('/auth/signin')
         }
         setLoading(false)
